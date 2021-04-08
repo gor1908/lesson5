@@ -1,0 +1,33 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+
+  tasks:
+
+    - name: Create docker
+      docker_container:
+        name: ubuntu
+        image: ubuntu
+        
+        published_ports:
+          - "80:80"
+        command: ["sleep","infinity"]
+
+    - name: Update
+      command: docker exec ubuntu bash -c 'apt update' 
+
+    - name: Install nginx
+      command: docker exec ubuntu bash -c 'apt -y install nginx'
+
+    - name: Start service
+      command: docker exec ubuntu bash -c 'service nginx start'
+      register: start
+
+    - debug: msg:"{{start.stdout}}"
+
+    - name: Create ITEA file
+      command: docker exec ubuntu bash -c 'echo "LESSON5 Olena " > /var/www/html/index.html'
+
+    - name:  Restart nginx
+      command: docker exec ubuntu bash -c echo 'service nginx restart'
